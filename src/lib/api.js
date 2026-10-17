@@ -149,14 +149,33 @@ export async function loadAll() {
   const byVehicle = (table, order) =>
     supabase.from(table).select('*').eq('vehicle_id', vehicle.id).order(order, { ascending: false });
 
-  const [wearParts, fixedCosts, weeks, expenses, replacements, workSessions] = await Promise.all([
+  const [wearParts, fixedCosts, weeks, expenses, replacements, workSessions, activeSession] = await Promise.all([
     byVehicle('wear_parts', 'created_at'),
     byVehicle('fixed_costs', 'created_at'),
     byVehicle('weeks', 'week_start'),
     byVehicle('expenses', 'expense_date'),
     byVehicle('part_replacements', 'odometer'),
     byVehicle('work_sessions', 'session_date'),
+    supabase.from('active_work_sessions').select('*').eq('vehicle_id', vehicle.id).maybeSingle(),
   ]).then((results) => results.map(unwrap));
 
-  return { vehicle, wearParts, fixedCosts, weeks, expenses, replacements, workSessions };
+  return { vehicle, wearParts, fixedCosts, weeks, expenses, replacements, workSessions, activeSession };
+}
+
+// ---------- Jornada en curso (guardada en la base de datos) ----------
+export async function startActiveWorkSession(vehicle, odometerStart, startedOn) {
+  return unwrap(
+    await supabase
+      .from('active_work_sessions')
+      .upsert(
+        { vehicle_id: vehicle.id, user_id: vehicle.user_id, odometer_start: odometerStart, started_on: startedOn },
+        { onConflict: 'vehicle_id' }
+      )
+      .select()
+      .single()
+  );
+}
+
+export async function cancelActiveWorkSession(vehicleId) {
+  unwrap(await supabase.from('active_work_sessions').delete().eq('vehicle_id', vehicleId));
 }

@@ -1,3 +1,7 @@
+import Historial from './pages/Historial';
+import Trabajo from './pages/Trabajo';
+import Registrar from './pages/Registrar';
+import Resumen from './pages/Resumen';
 import { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
@@ -7,7 +11,7 @@ import Config from './pages/Config';
 
 // Aqui se iran registrando las pantallas a medida que se construyen:
 // const PAGES = { config: Config, registrar: Registrar, trabajo: Trabajo, resumen: Resumen, historial: Historial };
-const PAGES = { config: Config };
+const PAGES = { config: Config, resumen: Resumen, registrar: Registrar, trabajo: Trabajo, historial: Historial };
 
 function Pendiente({ page }) {
   return (
